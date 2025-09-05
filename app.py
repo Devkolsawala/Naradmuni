@@ -89,7 +89,7 @@ Format your responses with:
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7,
-            "max_tokens": 250
+            "max_tokens": 150
         }
 
         logger.info(f"Sending request to Groq API for message: {user_message[:50]}...")
