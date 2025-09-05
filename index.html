@@ -7,8 +7,48 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Light theme */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f4;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5f6368;
+            --text-tertiary: #80868b;
+            --accent-primary: #ff6b35;
+            --accent-secondary: #ff8f65;
+            --accent-tertiary: #fff4f1;
+            --border-light: #e8eaed;
+            --border-medium: #dadce0;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-medium: rgba(0, 0, 0, 0.1);
+            --success: #34a853;
+            --warning: #fbbc04;
+            --error: #ea4335;
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3c3c3c;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --text-tertiary: #5f6368;
+            --accent-primary: #ff6b35;
+            --accent-secondary: #ff8f65;
+            --accent-tertiary: #3d2317;
+            --border-light: #3c4043;
+            --border-medium: #5f6368;
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-medium: rgba(0, 0, 0, 0.3);
+            --success: #34a853;
+            --warning: #fbbc04;
+            --error: #ea4335;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,57 +57,118 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .app {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-left: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
+            width: 100vw;
+            background: var(--bg-primary);
+            position: relative;
         }
 
         .header {
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 1.5rem;
+            background: var(--bg-primary);
+            border-bottom: 2px solid var(--border-light);
+            padding: 1rem 2rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            justify-content: space-between;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .header-avatar {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            border-radius: 6px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
         }
 
         .header-content h1 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
         .header-content p {
             font-size: 0.875rem;
-            color: #64748b;
-            margin-top: 1px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            border-radius: 50px;
+            width: 60px;
+            height: 32px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .theme-toggle-slider {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px var(--shadow-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        [data-theme="dark"] .theme-toggle-slider {
+            transform: translateX(28px);
         }
 
         .chat-container {
@@ -75,16 +176,21 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            padding: 0 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 0;
+            padding: 2rem 0;
+            scroll-behavior: smooth;
         }
 
         .messages::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .messages::-webkit-scrollbar-track {
@@ -92,72 +198,86 @@
         }
 
         .messages::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 2px;
+            background: var(--border-medium);
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
         }
 
         .message {
-            padding: 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
-            position: relative;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.user {
-            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
         }
 
         .message.bot {
-            background: white;
+            display: flex;
+            justify-content: flex-start;
         }
 
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
+        .message-bubble {
+            max-width: 70%;
+            padding: 1.25rem 1.5rem;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-bottom-left-radius: 8px;
         }
 
         .message-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 0.75rem;
             flex-shrink: 0;
-        }
-
-        .message.user .message-avatar {
-            background: #e2e8f0;
-            color: #475569;
+            position: relative;
+            overflow: hidden;
         }
 
         .message.bot .message-avatar {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
             color: white;
+            box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
         }
 
-        .message-sender {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .message.user .message-sender {
-            color: #475569;
+        .message.bot .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
         }
 
         .message-content {
-            font-size: 0.9375rem;
-            line-height: 1.7;
-            color: #1e293b;
-            margin-left: 2rem;
-        }
-
-        .message.user .message-content {
-            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
         .formatted-message p {
@@ -170,44 +290,86 @@
 
         .formatted-message strong {
             font-weight: 600;
-            color: #0f172a;
+        }
+
+        .message.user .formatted-message strong {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .message.bot .formatted-message strong {
+            color: var(--accent-primary);
         }
 
         .formatted-message ul, .formatted-message ol {
-            margin: 0.75rem 0;
-            padding-left: 1.25rem;
+            margin: 1rem 0;
+            padding-left: 1.5rem;
         }
 
         .formatted-message li {
-            margin-bottom: 0.375rem;
+            margin-bottom: 0.5rem;
         }
 
         .loading-message {
-            padding: 1.5rem;
-            background: white;
-            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .loading-bubble {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+
+        .loading-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
         }
 
         .loading-content {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-left: 2rem;
-            color: #64748b;
-            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
         .loading-dots {
             display: flex;
-            gap: 4px;
+            gap: 6px;
             align-items: center;
         }
 
         .loading-dot {
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: #94a3b8;
+            background: var(--accent-primary);
             animation: loading-pulse 1.5s infinite ease-in-out;
         }
 
@@ -227,75 +389,93 @@
         }
 
         .input-area {
-            border-top: 1px solid #e2e8f0;
-            padding: 1rem 1.5rem 1.5rem;
-            background: white;
+            padding: 2rem 0;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-light);
         }
 
         .input-container {
             position: relative;
             display: flex;
             align-items: flex-end;
-            gap: 0.75rem;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .message-input {
             flex: 1;
-            min-height: 44px;
+            min-height: 56px;
             max-height: 200px;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-light);
+            border-radius: 28px;
             outline: none;
             resize: none;
             font-family: inherit;
-            font-size: 0.9375rem;
+            font-size: 0.95rem;
             line-height: 1.5;
-            background: white;
-            transition: border-color 0.2s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow-light);
         }
 
         .message-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px #3b82f6;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
         }
 
         .message-input::placeholder {
-            color: #9ca3af;
+            color: var(--text-tertiary);
         }
 
         .send-button {
-            padding: 0.75rem 1.25rem;
-            background: #3b82f6;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 28px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.875rem;
-            transition: background-color 0.2s ease;
-            height: 44px;
+            transition: all 0.3s ease;
+            height: 56px;
             display: flex;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            transform: scale(1);
         }
 
         .send-button:hover:not(:disabled) {
-            background: #2563eb;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
         }
 
         .send-button:disabled {
-            background: #9ca3af;
+            background: var(--text-tertiary);
             cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
         }
 
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 1.5rem;
+        .error-message, .token-limit-message {
+            background: var(--bg-secondary);
+            border: 2px solid var(--error);
+            color: var(--error);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
             font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .token-limit-message {
+            border-color: var(--warning);
+            color: var(--warning);
         }
 
         .welcome-area {
@@ -304,84 +484,137 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 4rem 2rem;
             text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .welcome-hero {
+            margin-bottom: 3rem;
+        }
+
+        .welcome-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0 auto 2rem;
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 30px;
         }
 
         .welcome-content h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .welcome-content p {
-            color: #64748b;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-            max-width: 500px;
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            font-weight: 400;
         }
 
         .suggestions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 0.75rem;
-            max-width: 600px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            max-width: 900px;
             width: 100%;
         }
 
         .suggestion-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: 16px;
+            padding: 1.5rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .suggestion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .suggestion-card:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 24px var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .suggestion-card:hover::before {
+            transform: scaleX(1);
         }
 
         .suggestion-card h4 {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
         .suggestion-card p {
-            font-size: 0.8125rem;
-            color: #6b7280;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             margin: 0;
+            line-height: 1.5;
         }
 
         @media (max-width: 768px) {
-            .app {
-                max-width: 100%;
-                height: 100vh;
-            }
-            
             .header {
                 padding: 1rem;
             }
             
-            .message {
-                padding: 1rem;
+            .header-content h1 {
+                font-size: 1.25rem;
             }
 
-            .message-content {
-                margin-left: 1.75rem;
+            .chat-container {
+                padding: 0 1rem;
             }
 
-            .loading-content {
-                margin-left: 1.75rem;
+            .message-bubble {
+                max-width: 85%;
             }
 
             .input-area {
-                padding: 1rem;
+                padding: 1rem 0;
+            }
+
+            .input-container {
+                margin: 0;
             }
 
             .suggestions-grid {
@@ -389,12 +622,40 @@
             }
 
             .welcome-area {
-                padding: 1.5rem 1rem;
+                padding: 2rem 1rem;
+            }
+
+            .welcome-content h2 {
+                font-size: 2rem;
+            }
+
+            .welcome-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+
+            .header-controls {
+                gap: 0.5rem;
+            }
+
+            .theme-toggle {
+                width: 50px;
+                height: 28px;
+            }
+
+            .theme-toggle-slider {
+                width: 20px;
+                height: 20px;
+            }
+
+            [data-theme="dark"] .theme-toggle-slider {
+                transform: translateX(22px);
             }
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -451,30 +712,40 @@
             const [inputMessage, setInputMessage] = useState('');
             const [isLoading, setIsLoading] = useState(false);
             const [error, setError] = useState('');
+            const [tokenLimitExceeded, setTokenLimitExceeded] = useState(false);
+            const [theme, setTheme] = useState('light');
             const messagesEndRef = useRef(null);
 
             const suggestions = [
                 {
                     title: "Stress Management",
-                    description: "Learn techniques to handle daily stress",
+                    description: "Learn effective techniques to handle daily stress and maintain inner peace",
                     prompt: "How can I better manage stress in my daily life?"
                 },
                 {
-                    title: "Relationship Advice",
-                    description: "Get guidance on personal relationships",
+                    title: "Relationship Guidance",
+                    description: "Get thoughtful advice on building and maintaining healthy relationships",
                     prompt: "I need advice about improving my relationships"
                 },
                 {
-                    title: "Career Guidance",
-                    description: "Navigate your professional journey",
+                    title: "Career Wisdom",
+                    description: "Navigate your professional journey with clarity and purpose",
                     prompt: "Can you help me with career-related decisions?"
                 },
                 {
-                    title: "Work-Life Balance",
-                    description: "Find harmony between work and personal life",
+                    title: "Life Balance",
+                    description: "Discover harmony between work, personal life, and spiritual growth",
                     prompt: "How do I achieve better work-life balance?"
                 }
             ];
+
+            useEffect(() => {
+                document.body.setAttribute('data-theme', theme);
+            }, [theme]);
+
+            const toggleTheme = () => {
+                setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            };
 
             const scrollToBottom = () => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -488,6 +759,10 @@
                 const message = messageText.trim();
                 if (!message || isLoading) return;
 
+                // Reset error states
+                setError('');
+                setTokenLimitExceeded(false);
+
                 const userMessage = {
                     id: Date.now(),
                     type: 'user',
@@ -497,7 +772,6 @@
                 setMessages(prev => [...prev, userMessage]);
                 setInputMessage('');
                 setIsLoading(true);
-                setError('');
 
                 try {
                     const response = await fetch(API_URL, {
@@ -509,6 +783,14 @@
                     });
 
                     if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        
+                        // Check for token limit exceeded
+                        if (response.status === 429 || errorData.detail?.includes('rate') || errorData.detail?.includes('limit')) {
+                            setTokenLimitExceeded(true);
+                            return;
+                        }
+                        
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
 
@@ -540,13 +822,34 @@
                 sendMessage(prompt);
             };
 
+            const AvatarComponent = ({ className, size = "default" }) => {
+                // You can replace this with your custom image
+                // For now, it shows a placeholder that you can replace with your symbol
+                return (
+                    <div className={className}>
+                        {/* Replace this with your custom image */}
+                        { <img src="image.png" alt="Naradmuni" /> }
+                        🕉️
+                    </div>
+                );
+            };
+
             return (
                 <div className="app">
                     <div className="header">
-                        <div className="header-avatar">N</div>
-                        <div className="header-content">
-                            <h1>Naradmuni</h1>
-                            <p>Your wise companion for life's journey</p>
+                        <div className="header-left">
+                            <AvatarComponent className="header-avatar" />
+                            <div className="header-content">
+                                <h1>Naradmuni</h1>
+                                <p>Your wise companion for life's journey</p>
+                            </div>
+                        </div>
+                        <div className="header-controls">
+                            <div className="theme-toggle" onClick={toggleTheme}>
+                                <div className="theme-toggle-slider">
+                                    {theme === 'light' ? '☀️' : '🌙'}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -554,42 +857,42 @@
                         <div className="messages">
                             {messages.length === 0 ? (
                                 <div className="welcome-area">
-                                    <div className="welcome-content">
-                                        <h2>Welcome to Naradmuni</h2>
-                                        <p>I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help.</p>
-                                        
-                                        <div className="suggestions-grid">
-                                            {suggestions.map((suggestion, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="suggestion-card"
-                                                    onClick={() => handleSuggestionClick(suggestion.prompt)}
-                                                >
-                                                    <h4>{suggestion.title}</h4>
-                                                    <p>{suggestion.description}</p>
-                                                </div>
-                                            ))}
+                                    <div className="welcome-hero">
+                                        <AvatarComponent className="welcome-avatar" />
+                                        <div className="welcome-content">
+                                            <h2>Welcome to Naradmuni</h2>
+                                            <p>I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help you find your path.</p>
                                         </div>
+                                    </div>
+                                    
+                                    <div className="suggestions-grid">
+                                        {suggestions.map((suggestion, index) => (
+                                            <div
+                                                key={index}
+                                                className="suggestion-card"
+                                                onClick={() => handleSuggestionClick(suggestion.prompt)}
+                                            >
+                                                <h4>{suggestion.title}</h4>
+                                                <p>{suggestion.description}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ) : (
                                 messages.map((message) => (
                                     <div key={message.id} className={`message ${message.type}`}>
-                                        <div className="message-header">
-                                            <div className="message-avatar">
-                                                {message.type === 'user' ? 'You' : 'N'}
+                                        {message.type === 'bot' && (
+                                            <AvatarComponent className="message-avatar" />
+                                        )}
+                                        <div className="message-bubble">
+                                            <div className="message-content">
+                                                <div 
+                                                    className="formatted-message"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: formatMessage(message.content)
+                                                    }}
+                                                />
                                             </div>
-                                            <div className="message-sender">
-                                                {message.type === 'user' ? 'You' : 'Naradmuni'}
-                                            </div>
-                                        </div>
-                                        <div className="message-content">
-                                            <div 
-                                                className="formatted-message"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: formatMessage(message.content)
-                                                }}
-                                            />
                                         </div>
                                     </div>
                                 ))
@@ -597,16 +900,15 @@
                             
                             {isLoading && (
                                 <div className="loading-message">
-                                    <div className="message-header">
-                                        <div className="message-avatar">N</div>
-                                        <div className="message-sender">Naradmuni</div>
-                                    </div>
-                                    <div className="loading-content">
-                                        <span>Thinking...</span>
-                                        <div className="loading-dots">
-                                            <div className="loading-dot"></div>
-                                            <div className="loading-dot"></div>
-                                            <div className="loading-dot"></div>
+                                    <AvatarComponent className="loading-avatar" />
+                                    <div className="loading-bubble">
+                                        <div className="loading-content">
+                                            <span>Naradmuni is thinking...</span>
+                                            <div className="loading-dots">
+                                                <div className="loading-dot"></div>
+                                                <div className="loading-dot"></div>
+                                                <div className="loading-dot"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -614,7 +916,13 @@
                             
                             {error && (
                                 <div className="error-message">
-                                    {error}
+                                    ⚠️ {error}
+                                </div>
+                            )}
+
+                            {tokenLimitExceeded && (
+                                <div className="token-limit-message">
+                                    ⏳ You've reached the conversation limit for now. Please try again after some time to continue our discussion.
                                 </div>
                             )}
                             
@@ -625,19 +933,19 @@
                             <div className="input-container">
                                 <textarea
                                     className="message-input"
-                                    placeholder="Ask me anything about life, relationships, career, or personal growth..."
+                                    placeholder="Share what's on your mind... Ask about life, relationships, career, or personal growth"
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    disabled={isLoading}
+                                    disabled={isLoading || tokenLimitExceeded}
                                     rows="1"
                                 />
                                 <button
                                     className="send-button"
                                     onClick={() => sendMessage()}
-                                    disabled={!inputMessage.trim() || isLoading}
+                                    disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded}
                                 >
-                                    Send
+                                    {isLoading ? 'Sending...' : 'Send'}
                                 </button>
                             </div>
                         </div>
