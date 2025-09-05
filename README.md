@@ -12,9 +12,6 @@ It provides guidance on **relationships, career, wellness, inner peace**, and mu
 - 🎨 Minimal, calming UI design  
 - 🌐 Deployed on [Vercel](https://vercel.com/)  
 
-## 📸 Preview
-![Naradmuni Screenshot](./screenshot.png)  
-*(Replace `screenshot.png` with your actual screenshot file in the repo)*
 
 ## 🛠️ Tech Stack
 - **Frontend**: Next.js / React  
