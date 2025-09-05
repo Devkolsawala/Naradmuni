@@ -23,5 +23,5 @@ It provides guidance on **relationships, career, wellness, inner peace**, and mu
 
 Clone the repository:
 ```bash
-git clone https://github.com/your-username/naradmuni.git
+git clone https://github.com/dev090502/naradmuni.git
 cd naradmuni
