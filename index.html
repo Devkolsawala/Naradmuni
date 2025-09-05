@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,36 +16,90 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             min-height: 100vh;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+            50% { background: linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%); }
         }
 
         .app {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4, #45b7d1);
+            background-size: 300% 300%;
+            animation: gradientAnimation 6s ease infinite;
             color: white;
-            padding: 1rem 2rem;
+            padding: 2rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .header .sage-emoji {
+            font-size: 2.5rem;
+            animation: gentle-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes gentle-glow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+            50% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.8)); }
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 0.9rem;
+            opacity: 0.95;
+            font-size: 1rem;
+            font-weight: 300;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .chat-container {
@@ -57,14 +112,40 @@
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem;
-            background: #f8fafc;
+            padding: 1.5rem;
+            background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
         }
 
         .message {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .message.user {
@@ -72,117 +153,174 @@
         }
 
         .message-avatar {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 600;
             color: white;
             flex-shrink: 0;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .message-avatar:hover {
+            transform: scale(1.1);
         }
 
         .message.user .message-avatar {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #667eea, #764ba2);
         }
 
         .message.bot .message-avatar {
-            background: #059669;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
         }
 
         .message-content {
-            max-width: 70%;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            line-height: 1.5;
+            max-width: 75%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .message-content:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
 
         .message.user .message-content {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            border-bottom-right-radius: 0.25rem;
+            border-bottom-right-radius: 5px;
         }
 
         .message.bot .message-content {
             background: white;
-            color: #374151;
-            border-bottom-left-radius: 0.25rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #2d3748;
+            border-bottom-left-radius: 5px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Enhanced message formatting */
+        .formatted-message {
+            white-space: pre-wrap;
+        }
+
+        .formatted-message strong {
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .formatted-message p {
+            margin-bottom: 0.75rem;
+        }
+
+        .formatted-message ul, .formatted-message ol {
+            margin: 0.5rem 0 0.5rem 1.2rem;
+        }
+
+        .formatted-message li {
+            margin-bottom: 0.3rem;
+            line-height: 1.5;
+        }
+
+        .message.user .formatted-message strong {
+            color: rgba(255,255,255,0.95);
         }
 
         .input-area {
-            border-top: 1px solid #e5e7eb;
-            padding: 1rem;
-            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .input-container {
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
             align-items: flex-end;
         }
 
         .message-input {
             flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
             outline: none;
             resize: none;
             font-family: inherit;
             font-size: 1rem;
             max-height: 120px;
-            min-height: 44px;
+            min-height: 50px;
+            background: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .message-input:focus {
-            border-color: #4f46e5;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
         }
 
         .send-button {
-            padding: 0.75rem 1.5rem;
-            background: #4f46e5;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 1.5rem;
+            border-radius: 25px;
             cursor: pointer;
-            font-weight: 500;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            font-size: 1rem;
         }
 
         .send-button:hover:not(:disabled) {
-            background: #3730a3;
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .send-button:disabled {
-            background: #9ca3af;
+            background: #a0aec0;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .loading {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            color: #6b7280;
+            gap: 0.75rem;
+            color: #718096;
             font-style: italic;
+            font-weight: 500;
         }
 
         .loading-dots {
             display: flex;
-            gap: 2px;
+            gap: 3px;
         }
 
         .loading-dot {
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: #6b7280;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
             animation: bounce 1.4s infinite ease-in-out both;
         }
 
         .loading-dot:nth-child(1) { animation-delay: -0.32s; }
         .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
 
         @keyframes bounce {
             0%, 80%, 100% {
@@ -193,31 +331,74 @@
         }
 
         .error-message {
-            background: #fef2f2;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #fed7d7, #feb2b2);
+            color: #c53030;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
             margin: 1rem;
-            border: 1px solid #fecaca;
+            border: 1px solid #fc8181;
+            animation: shake 0.5s ease-in-out;
         }
 
-        @media (max-width: 640px) {
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #4a5568;
+            font-style: italic;
+        }
+
+        .welcome-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .suggestion-chip {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
             .app {
                 height: 100vh;
                 max-width: 100%;
                 margin: 0;
+                border-radius: 0;
             }
             
             .header {
-                padding: 1rem;
+                padding: 1.5rem 1rem;
             }
             
             .header h1 {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
             
             .message-content {
                 max-width: 85%;
+            }
+
+            .input-area {
+                padding: 1rem;
             }
         }
     </style>
@@ -228,21 +409,73 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Replace with your Hugging Face Space URL
         const API_URL = '/chat';
+
+        function formatMessage(content) {
+            // Enhanced formatting for better readability
+            let formatted = content;
+            
+            // Convert **text** to <strong>text</strong>
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert bullet points (- or •) to proper list items
+            const lines = formatted.split('\n');
+            let inList = false;
+            let result = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.match(/^[-•]\s/)) {
+                    if (!inList) {
+                        result += '<ul>';
+                        inList = true;
+                    }
+                    result += '<li>' + line.replace(/^[-•]\s/, '') + '</li>';
+                } else if (line.match(/^\d+\.\s/)) {
+                    if (!inList) {
+                        result += '<ol>';
+                        inList = true;
+                    }
+                    result += '<li>' + line.replace(/^\d+\.\s/, '') + '</li>';
+                } else {
+                    if (inList) {
+                        result += '</ul>';
+                        inList = false;
+                    }
+                    if (line) {
+                        result += '<p>' + line + '</p>';
+                    }
+                }
+            }
+            
+            if (inList) {
+                result += '</ul>';
+            }
+            
+            return result;
+        }
 
         function App() {
             const [messages, setMessages] = useState([
                 {
                     id: 1,
                     type: 'bot',
-                    content: 'Namaste! I am Naradmuni, your friendly life guide. How can I help you with your daily life problems today?'
+                    content: 'Namaste and welcome, dear seeker! 🙏\n\nI am Naradmuni, your wise companion on life\'s journey. With the wisdom of ages and a heart full of compassion, I\'m here to guide you through any challenge you may face.\n\nWhether you seek guidance on relationships, career paths, inner peace, or simply need someone to listen - I am here for you.\n\nWhat weighs upon your heart today, my friend?'
                 }
             ]);
             const [inputMessage, setInputMessage] = useState('');
             const [isLoading, setIsLoading] = useState(false);
             const [error, setError] = useState('');
             const messagesEndRef = useRef(null);
+
+            const suggestions = [
+                "How do I manage stress?",
+                "Relationship advice needed",
+                "Career guidance please",
+                "Work-life balance tips",
+                "How to find inner peace?"
+            ];
 
             const scrollToBottom = () => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -252,13 +485,14 @@
                 scrollToBottom();
             }, [messages]);
 
-            const sendMessage = async () => {
-                if (!inputMessage.trim() || isLoading) return;
+            const sendMessage = async (messageText = inputMessage) => {
+                const message = messageText.trim();
+                if (!message || isLoading) return;
 
                 const userMessage = {
                     id: Date.now(),
                     type: 'user',
-                    content: inputMessage.trim()
+                    content: message
                 };
 
                 setMessages(prev => [...prev, userMessage]);
@@ -272,7 +506,7 @@
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ message: userMessage.content })
+                        body: JSON.stringify({ message: message })
                     });
 
                     if (!response.ok) {
@@ -290,7 +524,7 @@
                     setMessages(prev => [...prev, botMessage]);
                 } catch (err) {
                     console.error('Error:', err);
-                    setError('Sorry, I am having trouble connecting. Please try again in a moment.');
+                    setError('My dear friend, I am having trouble connecting to the divine wisdom at this moment. Please try again in a moment, and I shall be here to guide you. 🙏');
                 } finally {
                     setIsLoading(false);
                 }
@@ -303,11 +537,21 @@
                 }
             };
 
+            const handleSuggestionClick = (suggestion) => {
+                setInputMessage(suggestion);
+                sendMessage(suggestion);
+            };
+
             return (
                 <div className="app">
                     <div className="header">
-                        <h1>🙏 Naradmuni</h1>
-                        <p>Your wise companion for daily life guidance</p>
+                        <div className="header-content">
+                            <h1>
+                                <span className="sage-emoji">🧙‍♂️</span>
+                                Naradmuni
+                            </h1>
+                            <p>Your wise companion for life's journey • Ancient wisdom for modern challenges</p>
+                        </div>
                     </div>
 
                     <div className="chat-container">
@@ -315,20 +559,42 @@
                             {messages.map((message) => (
                                 <div key={message.id} className={`message ${message.type}`}>
                                     <div className="message-avatar">
-                                        {message.type === 'user' ? 'U' : '🧘'}
+                                        {message.type === 'user' ? '👤' : '🧙‍♂️'}
                                     </div>
                                     <div className="message-content">
-                                        {message.content}
+                                        <div 
+                                            className="formatted-message"
+                                            dangerouslySetInnerHTML={{
+                                                __html: formatMessage(message.content)
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             ))}
                             
+                            {messages.length === 1 && (
+                                <div className="welcome-message">
+                                    <p>Start your conversation with one of these suggestions:</p>
+                                    <div className="welcome-suggestions">
+                                        {suggestions.map((suggestion, index) => (
+                                            <div
+                                                key={index}
+                                                className="suggestion-chip"
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                            >
+                                                {suggestion}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            
                             {isLoading && (
                                 <div className="message bot">
-                                    <div className="message-avatar">🧘</div>
+                                    <div className="message-avatar">🧙‍♂️</div>
                                     <div className="message-content">
                                         <div className="loading">
-                                            <span>Naradmuni is thinking</span>
+                                            <span>Naradmuni is contemplating your question</span>
                                             <div className="loading-dots">
                                                 <div className="loading-dot"></div>
                                                 <div className="loading-dot"></div>
@@ -352,7 +618,7 @@
                             <div className="input-container">
                                 <textarea
                                     className="message-input"
-                                    placeholder="Ask me about relationships, work, health, or any daily life problem..."
+                                    placeholder="Share what's on your mind... Ask about relationships, career, wellness, or any life challenge..."
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     onKeyPress={handleKeyPress}
@@ -360,7 +626,7 @@
                                 />
                                 <button
                                     className="send-button"
-                                    onClick={sendMessage}
+                                    onClick={() => sendMessage()}
                                     disabled={!inputMessage.trim() || isLoading}
                                 >
                                     Send
