@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
 import requests
 import os
 import logging
@@ -22,13 +23,18 @@ app.add_middleware(
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-@app.get("/")
-async def root():
-    return {"message": "Naradmuni Chatbot API is running"}
+# -------------------------
+# Serve index.html frontend
+# -------------------------
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    return FileResponse("index.html")
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 @app.post("/chat")
 async def chat(request: Request):
