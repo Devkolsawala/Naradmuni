@@ -27,6 +27,7 @@
             --success: #34a853;
             --warning: #fbbc04;
             --error: #ea4335;
+            --sidebar-width: 280px;
         }
 
         [data-theme="dark"] {
@@ -67,11 +68,175 @@
 
         .app {
             display: flex;
-            flex-direction: column;
             height: 100vh;
             width: 100vw;
             background: var(--bg-primary);
             position: relative;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-light);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px var(--shadow-medium);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .theme-option:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .theme-option.active {
+            background: var(--accent-tertiary);
+            border-color: var(--accent-primary);
+        }
+
+        .theme-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            transition: margin-left 0.3s ease;
         }
 
         .header {
@@ -91,6 +256,25 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .menu-button {
+            background: none;
+            border: 2px solid var(--border-light);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-button:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
         }
 
         .header-avatar {
@@ -127,48 +311,6 @@
             font-size: 0.875rem;
             color: var(--text-secondary);
             font-weight: 400;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .theme-toggle {
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-light);
-            border-radius: 50px;
-            width: 60px;
-            height: 32px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            padding: 2px;
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--accent-primary);
-        }
-
-        .theme-toggle-slider {
-            width: 24px;
-            height: 24px;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 4px var(--shadow-medium);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: white;
-        }
-
-        [data-theme="dark"] .theme-toggle-slider {
-            transform: translateX(28px);
         }
 
         .chat-container {
@@ -403,11 +545,17 @@
             margin: 0 auto;
         }
 
-        .message-input {
+        .input-wrapper {
             flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
             min-height: 56px;
             max-height: 200px;
             padding: 1rem 1.25rem;
+            padding-right: 4rem;
             border: 2px solid var(--border-light);
             border-radius: 28px;
             outline: none;
@@ -428,6 +576,24 @@
 
         .message-input::placeholder {
             color: var(--text-tertiary);
+        }
+
+        .token-counter {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            pointer-events: none;
+        }
+
+        .token-counter.warning {
+            color: var(--warning);
+        }
+
+        .token-counter.error {
+            color: var(--error);
         }
 
         .send-button {
@@ -513,8 +679,9 @@
         .welcome-avatar img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 30px;
+            padding: 10px;
         }
 
         .welcome-content h2 {
@@ -593,6 +760,10 @@
         }
 
         @media (max-width: 768px) {
+            .sidebar {
+                width: 100vw;
+            }
+
             .header {
                 padding: 1rem;
             }
@@ -634,24 +805,6 @@
                 height: 80px;
                 font-size: 32px;
             }
-
-            .header-controls {
-                gap: 0.5rem;
-            }
-
-            .theme-toggle {
-                width: 50px;
-                height: 28px;
-            }
-
-            .theme-toggle-slider {
-                width: 20px;
-                height: 20px;
-            }
-
-            [data-theme="dark"] .theme-toggle-slider {
-                transform: translateX(22px);
-            }
         }
     </style>
 </head>
@@ -662,6 +815,12 @@
         const { useState, useEffect, useRef } = React;
 
         const API_URL = '/chat';
+
+        // Token counting function (approximate)
+        function countTokens(text) {
+            // Simple token estimation: split by whitespace and punctuation
+            return text.split(/\s+/).filter(word => word.length > 0).length;
+        }
 
         function formatMessage(content) {
             let formatted = content;
@@ -714,7 +873,11 @@
             const [error, setError] = useState('');
             const [tokenLimitExceeded, setTokenLimitExceeded] = useState(false);
             const [theme, setTheme] = useState('light');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [tokenCount, setTokenCount] = useState(0);
             const messagesEndRef = useRef(null);
+
+            const TOKEN_LIMIT = 100;
 
             const suggestions = [
                 {
@@ -743,8 +906,16 @@
                 document.body.setAttribute('data-theme', theme);
             }, [theme]);
 
-            const toggleTheme = () => {
-                setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            useEffect(() => {
+                setTokenCount(countTokens(inputMessage));
+            }, [inputMessage]);
+
+            const toggleSidebar = () => {
+                setSidebarOpen(prev => !prev);
+            };
+
+            const closeSidebar = () => {
+                setSidebarOpen(false);
             };
 
             const scrollToBottom = () => {
@@ -758,6 +929,12 @@
             const sendMessage = async (messageText = inputMessage) => {
                 const message = messageText.trim();
                 if (!message || isLoading) return;
+
+                // Check token limit
+                if (countTokens(message) > TOKEN_LIMIT) {
+                    setError(`Message exceeds ${TOKEN_LIMIT} token limit. Please shorten your message.`);
+                    return;
+                }
 
                 // Reset error states
                 setError('');
@@ -814,7 +991,9 @@
             const handleKeyPress = (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    sendMessage();
+                    if (tokenCount <= TOKEN_LIMIT) {
+                        sendMessage();
+                    }
                 }
             };
 
@@ -823,130 +1002,173 @@
             };
 
             const AvatarComponent = ({ className, size = "default" }) => {
-                // You can replace this with your custom image
-                // For now, it shows a placeholder that you can replace with your symbol
                 return (
                     <div className={className}>
-                        {/* Replace this with your custom image */}
-                        { <img src="image.png" alt="Naradmuni" /> }
-                        {/* 🕉️ */}
+                        <img src="image.png" alt="Naradmuni" />
                     </div>
                 );
             };
 
             return (
                 <div className="app">
-                    <div className="header">
-                        <div className="header-left">
-                            <AvatarComponent className="header-avatar" />
-                            <div className="header-content">
-                                <h1>Naradmuni</h1>
-                                <p>Your wise companion for life's journey</p>
+                    {/* Sidebar Overlay */}
+                    <div 
+                        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+                        onClick={closeSidebar}
+                    />
+                    
+                    {/* Sidebar */}
+                    <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-header">
+                            <div className="sidebar-logo">
+                                <AvatarComponent className="sidebar-avatar" />
+                                <span className="sidebar-title">Naradmuni</span>
                             </div>
+                            <button className="sidebar-close" onClick={closeSidebar}>
+                                ×
+                            </button>
                         </div>
-                        <div className="header-controls">
-                            <div className="theme-toggle" onClick={toggleTheme}>
-                                <div className="theme-toggle-slider">
-                                    {theme === 'light' ? '☀️' : '🌙'}
+                        
+                        <div className="sidebar-content">
+                            <div className="sidebar-section">
+                                <h3>Appearance</h3>
+                                <div className="theme-selector">
+                                    <div 
+                                        className={`theme-option ${theme === 'light' ? 'active' : ''}`}
+                                        onClick={() => setTheme('light')}
+                                    >
+                                        <div className="theme-icon">☀️</div>
+                                        <span className="theme-label">Light Mode</span>
+                                    </div>
+                                    <div 
+                                        className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
+                                        onClick={() => setTheme('dark')}
+                                    >
+                                        <div className="theme-icon">🌙</div>
+                                        <span className="theme-label">Dark Mode</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="chat-container">
-                        <div className="messages">
-                            {messages.length === 0 ? (
-                                <div className="welcome-area">
-                                    <div className="welcome-hero">
-                                        <AvatarComponent className="welcome-avatar" />
-                                        <div className="welcome-content">
-                                            <h2>Welcome to Naradmuni</h2>
-                                            <p>I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help you find your path.</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="suggestions-grid">
-                                        {suggestions.map((suggestion, index) => (
-                                            <div
-                                                key={index}
-                                                className="suggestion-card"
-                                                onClick={() => handleSuggestionClick(suggestion.prompt)}
-                                            >
-                                                <h4>{suggestion.title}</h4>
-                                                <p>{suggestion.description}</p>
-                                            </div>
-                                        ))}
-                                    </div>
+                    {/* Main Content */}
+                    <div className="main-content">
+                        <div className="header">
+                            <div className="header-left">
+                                <button className="menu-button" onClick={toggleSidebar}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    </svg>
+                                </button>
+                                <AvatarComponent className="header-avatar" />
+                                <div className="header-content">
+                                    <h1>Naradmuni</h1>
+                                    <p>Your wise companion for life's journey</p>
                                 </div>
-                            ) : (
-                                messages.map((message) => (
-                                    <div key={message.id} className={`message ${message.type}`}>
-                                        {message.type === 'bot' && (
-                                            <AvatarComponent className="message-avatar" />
-                                        )}
-                                        <div className="message-bubble">
-                                            <div className="message-content">
-                                                <div 
-                                                    className="formatted-message"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: formatMessage(message.content)
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                            
-                            {isLoading && (
-                                <div className="loading-message">
-                                    <AvatarComponent className="loading-avatar" />
-                                    <div className="loading-bubble">
-                                        <div className="loading-content">
-                                            <span>Naradmuni is thinking...</span>
-                                            <div className="loading-dots">
-                                                <div className="loading-dot"></div>
-                                                <div className="loading-dot"></div>
-                                                <div className="loading-dot"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {error && (
-                                <div className="error-message">
-                                    ⚠️ {error}
-                                </div>
-                            )}
-
-                            {tokenLimitExceeded && (
-                                <div className="token-limit-message">
-                                    ⏳ You've reached the conversation limit for now. Please try again after some time to continue our discussion.
-                                </div>
-                            )}
-                            
-                            <div ref={messagesEndRef} />
+                            </div>
                         </div>
 
-                        <div className="input-area">
-                            <div className="input-container">
-                                <textarea
-                                    className="message-input"
-                                    placeholder="Share what's on your mind... Ask about life, relationships, career, or personal growth"
-                                    value={inputMessage}
-                                    onChange={(e) => setInputMessage(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    disabled={isLoading || tokenLimitExceeded}
-                                    rows="1"
-                                />
-                                <button
-                                    className="send-button"
-                                    onClick={() => sendMessage()}
-                                    disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded}
-                                >
-                                    {isLoading ? 'Sending...' : 'Send'}
-                                </button>
+                        <div className="chat-container">
+                            <div className="messages">
+                                {messages.length === 0 ? (
+                                    <div className="welcome-area">
+                                        <div className="welcome-hero">
+                                            <AvatarComponent className="welcome-avatar" />
+                                            <div className="welcome-content">
+                                                <h2>Welcome to Naradmuni</h2>
+                                                <p>I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help you find your path.</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="suggestions-grid">
+                                            {suggestions.map((suggestion, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="suggestion-card"
+                                                    onClick={() => handleSuggestionClick(suggestion.prompt)}
+                                                >
+                                                    <h4>{suggestion.title}</h4>
+                                                    <p>{suggestion.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    messages.map((message) => (
+                                        <div key={message.id} className={`message ${message.type}`}>
+                                            {message.type === 'bot' && (
+                                                <AvatarComponent className="message-avatar" />
+                                            )}
+                                            <div className="message-bubble">
+                                                <div className="message-content">
+                                                    <div 
+                                                        className="formatted-message"
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: formatMessage(message.content)
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                                
+                                {isLoading && (
+                                    <div className="loading-message">
+                                        <AvatarComponent className="loading-avatar" />
+                                        <div className="loading-bubble">
+                                            <div className="loading-content">
+                                                <span>Naradmuni is thinking...</span>
+                                                <div className="loading-dots">
+                                                    <div className="loading-dot"></div>
+                                                    <div className="loading-dot"></div>
+                                                    <div className="loading-dot"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {error && (
+                                    <div className="error-message">
+                                        ⚠️ {error}
+                                    </div>
+                                )}
+
+                                {tokenLimitExceeded && (
+                                    <div className="token-limit-message">
+                                        ⏳ You've reached the conversation limit for now. Please try again after some time to continue our discussion.
+                                    </div>
+                                )}
+                                
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            <div className="input-area">
+                                <div className="input-container">
+                                    <div className="input-wrapper">
+                                        <textarea
+                                            className="message-input"
+                                            placeholder="Share what's on your mind... Ask about life, relationships, career, or personal growth"
+                                            value={inputMessage}
+                                            onChange={(e) => setInputMessage(e.target.value)}
+                                            onKeyPress={handleKeyPress}
+                                            disabled={isLoading || tokenLimitExceeded}
+                                            rows="1"
+                                        />
+                                        <div className={`token-counter ${tokenCount > TOKEN_LIMIT * 0.8 ? tokenCount > TOKEN_LIMIT ? 'error' : 'warning' : ''}`}>
+                                            {tokenCount}/{TOKEN_LIMIT}
+                                        </div>
+                                    </div>
+                                    <button
+                                        className="send-button"
+                                        onClick={() => sendMessage()}
+                                        disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded || tokenCount > TOKEN_LIMIT}
+                                    >
+                                        {isLoading ? 'Sending...' : 'Send'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -955,6 +1177,3 @@
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
-</body>
-</html>
