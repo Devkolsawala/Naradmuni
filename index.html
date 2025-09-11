@@ -166,71 +166,82 @@
             letter-spacing: 0.5px;
         }
 
-        .theme-selector {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .theme-option {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-        }
-
-        .theme-option:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .theme-option.active {
-            background: var(--accent-tertiary);
-            border-color: var(--accent-primary);
-        }
-
-        .theme-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .theme-label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
         .sidebar-footer {
             padding: 1.5rem;
             border-top: 1px solid var(--border-light);
         }
 
-        .toggle-button {
+        .theme-toggle-button {
             width: 100%;
             padding: 0.75rem 1rem;
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 0.875rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
         }
 
-        .toggle-button:hover {
-            background: var(--accent-secondary);
+        .theme-toggle-button:hover {
+            border-color: var(--accent-primary);
+            background: var(--accent-tertiary);
             transform: translateY(-1px);
         }
 
-        .toggle-button:active {
+        .theme-toggle-button:active {
             transform: translateY(0);
+        }
+
+        .theme-toggle-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-toggle-icon {
+            font-size: 1.125rem;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle-text {
+            font-weight: 600;
+        }
+
+        .theme-toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: var(--border-medium);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-switch::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px var(--shadow-light);
+        }
+
+        [data-theme="dark"] .theme-toggle-switch {
+            background: var(--accent-primary);
+        }
+
+        [data-theme="dark"] .theme-toggle-switch::before {
+            transform: translateX(24px);
         }
 
         /* Overlay */
@@ -884,6 +895,10 @@
                 setSidebarOpen(false);
             };
 
+            const toggleTheme = () => {
+                setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            };
+
             const scrollToBottom = () => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             };
@@ -977,10 +992,6 @@
                 );
             };
 
-            const handleToggleAction = () => {
-                alert('Toggle feature activated! This could be used for advanced settings or special features.');
-            };
-
             return (
                 <div className="app">
                     {/* Sidebar Overlay */}
@@ -1003,29 +1014,25 @@
                         
                         <div className="sidebar-content">
                             <div className="sidebar-section">
-                                <h3>Appearance</h3>
-                                <div className="theme-selector">
-                                    <div 
-                                        className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-                                        onClick={() => setTheme('light')}
-                                    >
-                                        <div className="theme-icon">☀️</div>
-                                        <span className="theme-label">Light Mode</span>
-                                    </div>
-                                    <div 
-                                        className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-                                        onClick={() => setTheme('dark')}
-                                    >
-                                        <div className="theme-icon">🌙</div>
-                                        <span className="theme-label">Dark Mode</span>
-                                    </div>
-                                </div>
+                                <h3>About Naradmuni</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                                    Your wise life guide, here to provide thoughtful guidance on relationships, 
+                                    career, wellness, and personal growth with ancient wisdom and modern insights.
+                                </p>
                             </div>
                         </div>
                         
                         <div className="sidebar-footer">
-                            <button className="toggle-button" onClick={handleToggleAction}>
-                                🔄 Advanced Features
+                            <button className="theme-toggle-button" onClick={toggleTheme}>
+                                <div className="theme-toggle-content">
+                                    <span className="theme-toggle-icon">
+                                        {theme === 'light' ? '☀️' : '🌙'}
+                                    </span>
+                                    <span className="theme-toggle-text">
+                                        {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
+                                    </span>
+                                </div>
+                                <div className="theme-toggle-switch"></div>
                             </button>
                         </div>
                     </div>
@@ -1157,3 +1164,4 @@
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
+        
