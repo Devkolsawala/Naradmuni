@@ -326,6 +326,59 @@
             color: var(--text-primary);
         }
 
+        .auth-section {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-button {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .logout-button:hover {
+            background: var(--accent-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .login-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
         .chat-container {
             flex: 1;
             display: flex;
@@ -800,88 +853,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // at top of App()
-        const [user, setUser] = useState(null);
-
-        // On mount: check session and initialize Google button
-        useEffect(() => {
-        // Apply theme (existing)
-        document.body.setAttribute('data-theme', theme);
-
-        // check if backend session exists
-        (async () => {
-            try {
-            const res = await fetch('/auth/me', { credentials: 'include' });
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data.user);
-            }
-            } catch (e) {
-            // not authenticated
-            }
-        })();
-
-        // Initialize Google Sign-in button (if lib loaded)
-        const interval = setInterval(() => {
-            if (window.google && document.getElementById('g_id_signin')) {
-            clearInterval(interval);
-            window.google.accounts.id.initialize({
-                client_id: "YOUR_GOOGLE_CLIENT_ID",
-                callback: handleCredentialResponse,
-            });
-            window.google.accounts.id.renderButton(
-                document.getElementById("g_id_signin"),
-                { theme: "outline", size: "large" } // customization
-            );
-            // optional: disable auto prompt
-            // window.google.accounts.id.prompt();
-            }
-        }, 200);
-
-        return () => clearInterval(interval);
-        }, []); // run once
-
-        // handle Google credential response
-        async function handleCredentialResponse(response) {
-        // response.credential is an ID token (JWT)
-        try {
-            const res = await fetch('/auth/google', {
-            method: 'POST',
-            credentials: 'include',              // important: allow cookie to be set
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credential: response.credential })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-            setUser(data.user);
-            } else {
-            console.error('Login failed', data);
-            alert('Login failed');
-            }
-        } catch (err) {
-            console.error('Auth error', err);
-        }
-        }
-
-        // Add logout handler
-        async function handleLogout() {
-        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-        setUser(null);
-        }
-
-        // Modify your sendMessage() fetch to include credentials
-        const response = await fetch(API_URL, {
-        method: 'POST',
-        credentials: 'include',   // <-- so session cookie goes with request
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: message })
-        });
-
         const { useState, useEffect, useRef } = React;
 
         const API_URL = '/chat';
+
+        // Get Google Client ID from environment (this would be set by your backend)
+        const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
 
         function formatMessage(content) {
             let formatted = content;
@@ -937,6 +914,7 @@
             const [theme, setTheme] = useState('light');
             const [sidebarOpen, setSidebarOpen] = useState(false);
             const [characterCount, setCharacterCount] = useState(0);
+            const [user, setUser] = useState(null);
             const messagesEndRef = useRef(null);
 
             const CHARACTER_LIMIT = 100;
@@ -959,9 +937,78 @@
                 }
             ];
 
+            // Apply theme and check authentication on mount
             useEffect(() => {
                 document.body.setAttribute('data-theme', theme);
+                checkAuthStatus();
+                initializeGoogleSignIn();
             }, [theme]);
+
+            // Check if user is authenticated
+            const checkAuthStatus = async () => {
+                try {
+                    const res = await fetch('/auth/me', { credentials: 'include' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setUser(data.user);
+                    }
+                } catch (e) {
+                    console.log('User not authenticated');
+                }
+            };
+
+            // Initialize Google Sign-In
+            const initializeGoogleSignIn = () => {
+                const interval = setInterval(() => {
+                    if (window.google && document.getElementById('g_id_signin')) {
+                        clearInterval(interval);
+                        window.google.accounts.id.initialize({
+                            client_id: GOOGLE_CLIENT_ID,
+                            callback: handleCredentialResponse,
+                        });
+                        window.google.accounts.id.renderButton(
+                            document.getElementById("g_id_signin"),
+                            { theme: "outline", size: "large" }
+                        );
+                    }
+                }, 200);
+
+                // Clear interval after 10 seconds to avoid infinite polling
+                setTimeout(() => clearInterval(interval), 10000);
+            };
+
+            // Handle Google credential response
+            const handleCredentialResponse = async (response) => {
+                try {
+                    const res = await fetch('/auth/google', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ credential: response.credential })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        setUser(data.user);
+                    } else {
+                        console.error('Login failed', data);
+                        setError('Login failed. Please try again.');
+                    }
+                } catch (err) {
+                    console.error('Auth error', err);
+                    setError('Authentication error. Please try again.');
+                }
+            };
+
+            // Handle logout
+            const handleLogout = async () => {
+                try {
+                    await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                    setUser(null);
+                    setMessages([]);
+                } catch (err) {
+                    console.error('Logout error', err);
+                }
+            };
 
             useEffect(() => {
                 setCharacterCount(inputMessage.length);
@@ -992,6 +1039,12 @@
                 const message = messageText.trim();
                 if (!message || isLoading || message.length > CHARACTER_LIMIT) return;
 
+                // Check if user is authenticated
+                if (!user) {
+                    setError('Please sign in to start chatting with Naradmuni.');
+                    return;
+                }
+
                 // Reset error states
                 setError('');
                 setTokenLimitExceeded(false);
@@ -1010,6 +1063,7 @@
                 try {
                     const response = await fetch(API_URL, {
                         method: 'POST',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -1018,6 +1072,13 @@
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
+                        
+                        // Check for authentication error
+                        if (response.status === 401) {
+                            setUser(null);
+                            setError('Your session has expired. Please sign in again.');
+                            return;
+                        }
                         
                         // Check for token limit exceeded
                         if (response.status === 429 || errorData.detail?.includes('rate') || errorData.detail?.includes('limit')) {
@@ -1062,6 +1123,10 @@
             };
 
             const handleSuggestionClick = (prompt) => {
+                if (!user) {
+                    setError('Please sign in to start chatting with Naradmuni.');
+                    return;
+                }
                 sendMessage(prompt);
             };
 
@@ -1128,15 +1193,19 @@
                             </button>
                             <AvatarComponent className="header-avatar" />
                             <h1 className="header-title">Naradmuni</h1>
-                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            
+                            <div className="auth-section">
                                 {user ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <img src={user.picture} alt="avatar" style={{ width: 36, height: 36, borderRadius: 8 }} />
-                                    <div style={{ fontSize: 14, fontWeight: 600 }}>{user.name}</div>
-                                    <button onClick={handleLogout} style={{ padding: '6px 10px', borderRadius: 8 }}>Logout</button>
-                                </div>
+                                    <div className="user-info">
+                                        <img src={user.picture} alt="User Avatar" className="user-avatar" />
+                                        <div className="user-name">{user.name}</div>
+                                        <button onClick={handleLogout} className="logout-button">Logout</button>
+                                    </div>
                                 ) : (
-                                <div id="g_id_signin"></div>  
+                                    <div className="login-section">
+                                        <span className="login-text">Sign in to chat:</span>
+                                        <div id="g_id_signin"></div>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -1149,22 +1218,29 @@
                                             <AvatarComponent className="welcome-avatar" />
                                             <div className="welcome-content">
                                                 <h2>Welcome to Naradmuni</h2>
-                                                <p>I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help you find your path.</p>
+                                                <p>
+                                                    {user ? 
+                                                        "I'm here to provide thoughtful guidance on life's challenges. Whether you're seeking advice on relationships, career, wellness, or personal growth, I'm here to listen and help you find your path." :
+                                                        "Please sign in with Google to start your conversation with me. I'm here to provide thoughtful guidance on life's challenges."
+                                                    }
+                                                </p>
                                             </div>
                                         </div>
                                         
-                                        <div className="suggestions-grid">
-                                            {suggestions.map((suggestion, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="suggestion-card"
-                                                    onClick={() => handleSuggestionClick(suggestion.prompt)}
-                                                >
-                                                    <h4>{suggestion.title}</h4>
-                                                    <p>{suggestion.description}</p>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {user && (
+                                            <div className="suggestions-grid">
+                                                {suggestions.map((suggestion, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="suggestion-card"
+                                                        onClick={() => handleSuggestionClick(suggestion.prompt)}
+                                                    >
+                                                        <h4>{suggestion.title}</h4>
+                                                        <p>{suggestion.description}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     messages.map((message) => (
@@ -1223,32 +1299,34 @@
                                 <div ref={messagesEndRef} />
                             </div>
 
-                            <div className="input-area">
-                                <div className="input-container">
-                                    <div className="input-wrapper">
-                                        <textarea
-                                            className="message-input"
-                                            placeholder="Share what's on your mind... (max 100 characters)"
-                                            value={inputMessage}
-                                            onChange={handleInputChange}
-                                            onKeyPress={handleKeyPress}
-                                            disabled={isLoading || tokenLimitExceeded}
-                                            rows="1"
-                                            maxLength={CHARACTER_LIMIT}
-                                        />
-                                        <div className={`character-counter ${characterCount > CHARACTER_LIMIT * 0.8 ? characterCount > CHARACTER_LIMIT ? 'error' : 'warning' : ''}`}>
-                                            {characterCount}/{CHARACTER_LIMIT}
+                            {user && (
+                                <div className="input-area">
+                                    <div className="input-container">
+                                        <div className="input-wrapper">
+                                            <textarea
+                                                className="message-input"
+                                                placeholder="Share what's on your mind... (max 100 characters)"
+                                                value={inputMessage}
+                                                onChange={handleInputChange}
+                                                onKeyPress={handleKeyPress}
+                                                disabled={isLoading || tokenLimitExceeded}
+                                                rows="1"
+                                                maxLength={CHARACTER_LIMIT}
+                                            />
+                                            <div className={`character-counter ${characterCount > CHARACTER_LIMIT * 0.8 ? characterCount > CHARACTER_LIMIT ? 'error' : 'warning' : ''}`}>
+                                                {characterCount}/{CHARACTER_LIMIT}
+                                            </div>
                                         </div>
+                                        <button
+                                            className="send-button"
+                                            onClick={() => sendMessage()}
+                                            disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded || characterLimitExceeded || characterCount > CHARACTER_LIMIT}
+                                        >
+                                            {isLoading ? 'Sending...' : 'Send'}
+                                        </button>
                                     </div>
-                                    <button
-                                        className="send-button"
-                                        onClick={() => sendMessage()}
-                                        disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded || characterLimitExceeded || characterCount > CHARACTER_LIMIT}
-                                    >
-                                        {isLoading ? 'Sending...' : 'Send'}
-                                    </button>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1256,4 +1334,3 @@
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
-        
