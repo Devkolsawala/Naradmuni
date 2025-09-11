@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Naradmuni - Your Life Guide</title>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -798,6 +800,85 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // at top of App()
+        const [user, setUser] = useState(null);
+
+        // On mount: check session and initialize Google button
+        useEffect(() => {
+        // Apply theme (existing)
+        document.body.setAttribute('data-theme', theme);
+
+        // check if backend session exists
+        (async () => {
+            try {
+            const res = await fetch('/auth/me', { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+            }
+            } catch (e) {
+            // not authenticated
+            }
+        })();
+
+        // Initialize Google Sign-in button (if lib loaded)
+        const interval = setInterval(() => {
+            if (window.google && document.getElementById('g_id_signin')) {
+            clearInterval(interval);
+            window.google.accounts.id.initialize({
+                client_id: "YOUR_GOOGLE_CLIENT_ID",
+                callback: handleCredentialResponse,
+            });
+            window.google.accounts.id.renderButton(
+                document.getElementById("g_id_signin"),
+                { theme: "outline", size: "large" } // customization
+            );
+            // optional: disable auto prompt
+            // window.google.accounts.id.prompt();
+            }
+        }, 200);
+
+        return () => clearInterval(interval);
+        }, []); // run once
+
+        // handle Google credential response
+        async function handleCredentialResponse(response) {
+        // response.credential is an ID token (JWT)
+        try {
+            const res = await fetch('/auth/google', {
+            method: 'POST',
+            credentials: 'include',              // important: allow cookie to be set
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: response.credential })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+            setUser(data.user);
+            } else {
+            console.error('Login failed', data);
+            alert('Login failed');
+            }
+        } catch (err) {
+            console.error('Auth error', err);
+        }
+        }
+
+        // Add logout handler
+        async function handleLogout() {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+        setUser(null);
+        }
+
+        // Modify your sendMessage() fetch to include credentials
+        const response = await fetch(API_URL, {
+        method: 'POST',
+        credentials: 'include',   // <-- so session cookie goes with request
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+        });
+
         const { useState, useEffect, useRef } = React;
 
         const API_URL = '/chat';
@@ -1047,6 +1128,17 @@
                             </button>
                             <AvatarComponent className="header-avatar" />
                             <h1 className="header-title">Naradmuni</h1>
+                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                {user ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <img src={user.picture} alt="avatar" style={{ width: 36, height: 36, borderRadius: 8 }} />
+                                    <div style={{ fontSize: 14, fontWeight: 600 }}>{user.name}</div>
+                                    <button onClick={handleLogout} style={{ padding: '6px 10px', borderRadius: 8 }}>Logout</button>
+                                </div>
+                                ) : (
+                                <div id="g_id_signin"></div>  
+                                )}
+                            </div>
                         </div>
 
                         <div className="chat-container">

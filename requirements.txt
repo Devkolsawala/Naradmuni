@@ -3,3 +3,5 @@ uvicorn
 requests
 python-multipart
 jinja2
+google-auth
+pyjwt
