@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Naradmuni - Your Life Guide</title>
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
     <style>
         :root {
             /* Light theme */
@@ -331,80 +328,44 @@
 
         .auth-section {
             margin-left: auto;
-            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .profile-menu {
-            position: relative;
-        }
-
-        .profile-trigger {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            border-radius: 50%;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            border: 2px solid var(--border-light);
-            transition: border-color 0.2s ease;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
         }
 
-        .profile-trigger:hover .user-avatar {
-            border-color: var(--accent-primary);
-        }
-        
-        .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 12px);
-            right: 0;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px var(--shadow-medium);
-            z-index: 1100;
-            width: 240px;
-            overflow: hidden;
-            animation: fadeIn 0.2s ease-out;
-            padding: 0.5rem;
-        }
-
-        .profile-dropdown-header {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .profile-dropdown-name {
+        .user-name {
+            font-size: 14px;
             font-weight: 600;
-            font-size: 0.9rem;
             color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .logout-button {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 0.75rem 1rem;
-            background: none;
-            border: none;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 12px;
             color: var(--text-secondary);
             transition: all 0.2s ease;
-            border-radius: 8px;
         }
 
         .logout-button:hover {
             background: var(--accent-tertiary);
+            border-color: var(--accent-primary);
             color: var(--accent-primary);
-            font-weight: 500;
         }
 
         .login-section {
@@ -954,10 +915,7 @@
             const [sidebarOpen, setSidebarOpen] = useState(false);
             const [characterCount, setCharacterCount] = useState(0);
             const [user, setUser] = useState(null);
-            const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
             const messagesEndRef = useRef(null);
-            const profileMenuRef = useRef(null);
 
             const CHARACTER_LIMIT = 100;
 
@@ -978,24 +936,6 @@
                     prompt: "How do I achieve better work-life balance?"
                 }
             ];
-             useEffect(() => {
-                if (user) {
-                fetch('/history', { credentials: 'include' })
-                    .then(res => res.json())
-                    .then(data => {
-                    if (data.history) {
-                        setMessages(
-                        data.history.map((msg, i) => ({
-                            id: i,
-                            type: msg.message_type,
-                            content: msg.content
-                        }))
-                        );
-                    }
-                    })
-                    .catch(err => console.error("Error fetching history:", err));
-                }
-            }, [user]);
 
             // Apply theme and check authentication on mount
             useEffect(() => {
@@ -1003,19 +943,6 @@
                 checkAuthStatus();
                 initializeGoogleSignIn();
             }, [theme]);
-
-            // Handle clicking outside the profile menu to close it
-            useEffect(() => {
-                function handleClickOutside(event) {
-                    if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-                        setIsProfileMenuOpen(false);
-                    }
-                }
-                document.addEventListener("mousedown", handleClickOutside);
-                return () => {
-                    document.removeEventListener("mousedown", handleClickOutside);
-                };
-            }, [profileMenuRef]);
 
             // Check if user is authenticated
             const checkAuthStatus = async () => {
@@ -1032,7 +959,6 @@
 
             // Initialize Google Sign-In
             const initializeGoogleSignIn = () => {
-                if (user) return; // Don't initialize if user is already logged in
                 const interval = setInterval(() => {
                     if (window.google && document.getElementById('g_id_signin')) {
                         clearInterval(interval);
@@ -1063,7 +989,6 @@
                     const data = await res.json();
                     if (res.ok && data.success) {
                         setUser(data.user);
-                        setIsProfileMenuOpen(false); // Close menu on login
                     } else {
                         console.error('Login failed', data);
                         setError('Login failed. Please try again.');
@@ -1077,12 +1002,9 @@
             // Handle logout
             const handleLogout = async () => {
                 try {
-                    const res = await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-                    if (res.ok) {
-                        setUser(null);
-                        // Force a reload to correctly re-initialize the Google Sign-In button
-                        window.location.reload();
-                    }
+                    await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                    setUser(null);
+                    setMessages([]);
                 } catch (err) {
                     console.error('Logout error', err);
                 }
@@ -1195,7 +1117,9 @@
 
             const handleInputChange = (e) => {
                 const value = e.target.value;
-                setInputMessage(value);
+                if (value.length <= CHARACTER_LIMIT) {
+                    setInputMessage(value);
+                }
             };
 
             const handleSuggestionClick = (prompt) => {
@@ -1272,23 +1196,10 @@
                             
                             <div className="auth-section">
                                 {user ? (
-                                    <div className="profile-menu" ref={profileMenuRef}>
-                                        <button 
-                                            className="profile-trigger" 
-                                            onClick={() => setIsProfileMenuOpen(prev => !prev)}
-                                        >
-                                            <img src={user.picture} alt="User Avatar" className="user-avatar" />
-                                        </button>
-                                        {isProfileMenuOpen && (
-                                            <div className="profile-dropdown">
-                                                <div className="profile-dropdown-header">
-                                                    <div className="profile-dropdown-name">{user.name}</div>
-                                                </div>
-                                                <button onClick={handleLogout} className="logout-button">
-                                                    Logout
-                                                </button>
-                                            </div>
-                                        )}
+                                    <div className="user-info">
+                                        <img src={user.picture} alt="User Avatar" className="user-avatar" />
+                                        <div className="user-name">{user.name}</div>
+                                        <button onClick={handleLogout} className="logout-button">Logout</button>
                                     </div>
                                 ) : (
                                     <div className="login-section">
@@ -1400,15 +1311,16 @@
                                                 onKeyPress={handleKeyPress}
                                                 disabled={isLoading || tokenLimitExceeded}
                                                 rows="1"
+                                                maxLength={CHARACTER_LIMIT}
                                             />
-                                            <div className={`character-counter ${characterCount > CHARACTER_LIMIT * 0.9 ? characterCount >= CHARACTER_LIMIT ? 'error' : 'warning' : ''}`}>
+                                            <div className={`character-counter ${characterCount > CHARACTER_LIMIT * 0.8 ? characterCount > CHARACTER_LIMIT ? 'error' : 'warning' : ''}`}>
                                                 {characterCount}/{CHARACTER_LIMIT}
                                             </div>
                                         </div>
                                         <button
                                             className="send-button"
                                             onClick={() => sendMessage()}
-                                            disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded || characterLimitExceeded}
+                                            disabled={!inputMessage.trim() || isLoading || tokenLimitExceeded || characterLimitExceeded || characterCount > CHARACTER_LIMIT}
                                         >
                                             {isLoading ? 'Sending...' : 'Send'}
                                         </button>
@@ -1422,7 +1334,3 @@
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
-
-    </script>
-</body>
-</html>
