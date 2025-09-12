@@ -1,4 +1,4 @@
-# app.py (with chat history support)
+# app.py (with chat history support and proper database initialization)
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -11,6 +11,7 @@ from google.auth.transport import requests as grequests
 import jwt
 from datetime import datetime, timedelta
 from databases import Database
+import asyncpg
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,8 +24,18 @@ SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-secret-please-change-in-produc
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-DATABASE_URL = os.getenv("DATABASE_URL")  # Neon connection string
-database = Database(DATABASE_URL)
+# Try different database URL environment variables that might be set by Neon/Vercel
+DATABASE_URL = (
+    os.getenv("DATABASE_URL") or 
+    os.getenv("POSTGRES_URL") or 
+    os.getenv("DATABASE_URL_UNPOOLED") or
+    os.getenv("POSTGRES_URL_NON_POOLING")
+)
+
+# Initialize database connection
+database = None
+if DATABASE_URL:
+    database = Database(DATABASE_URL)
 
 # Validate required environment variables
 if not GOOGLE_CLIENT_ID:
@@ -34,7 +45,7 @@ if not GROQ_API_KEY:
     logger.error("GROQ_API_KEY environment variable is not set!")
 
 if not DATABASE_URL:
-    logger.error("DATABASE_URL environment variable is not set!")
+    logger.warning("DATABASE_URL environment variable is not set! Chat history will not be saved.")
 
 app = FastAPI(title="Naradmuni Chatbot API", version="1.0.0")
 
@@ -83,16 +94,54 @@ def get_authenticated_user(request: Request):
         logger.error(f"Session token decode error: {e}")
         return None
 
+async def create_tables_if_not_exist():
+    """Create the chat_history table if it doesn't exist"""
+    if not database:
+        return
+    
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS chat_history (
+        id SERIAL PRIMARY KEY,
+        user_email VARCHAR(255) NOT NULL,
+        message_type VARCHAR(10) NOT NULL CHECK (message_type IN ('user', 'bot')),
+        content TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_chat_history_user_email ON chat_history(user_email);
+    CREATE INDEX IF NOT EXISTS idx_chat_history_created_at ON chat_history(created_at);
+    """
+    
+    try:
+        await database.execute(create_table_query)
+        logger.info("Database tables created/verified successfully")
+    except Exception as e:
+        logger.error(f"Error creating database tables: {e}")
+
 # -------------------------
 # Startup / Shutdown events
 # -------------------------
 @app.on_event("startup")
 async def startup():
-    await database.connect()
+    if database:
+        try:
+            await database.connect()
+            await create_tables_if_not_exist()
+            logger.info("Database connected and initialized successfully")
+        except Exception as e:
+            logger.error(f"Database connection failed: {e}")
+            # Don't fail the entire app if DB connection fails
+    else:
+        logger.warning("No database configured - running without chat history")
 
 @app.on_event("shutdown")
 async def shutdown():
-    await database.disconnect()
+    if database:
+        try:
+            await database.disconnect()
+            logger.info("Database disconnected")
+        except Exception as e:
+            logger.error(f"Error disconnecting database: {e}")
 
 # -------------------------
 # Serve index.html frontend
@@ -119,11 +168,19 @@ async def serve_frontend():
 
 @app.get("/health")
 async def health_check():
+    db_status = "connected" if database else "not configured"
+    if database:
+        try:
+            await database.fetch_one("SELECT 1")
+            db_status = "connected"
+        except:
+            db_status = "connection failed"
+    
     return {
         "status": "healthy",
         "google_auth_configured": bool(GOOGLE_CLIENT_ID),
         "groq_configured": bool(GROQ_API_KEY),
-        "database_configured": bool(DATABASE_URL),
+        "database_status": db_status,
     }
 
 # -------------------------
@@ -234,15 +291,23 @@ async def chat(chat_request: ChatRequest, request: Request):
         reply_data = response.json()
         reply = reply_data["choices"][0]["message"]["content"]
 
-        # --- Save messages into DB ---
-        await database.execute(
-            "INSERT INTO chat_history (user_email, message_type, content) VALUES (:email, 'user', :content)",
-            {"email": user_email, "content": user_message},
-        )
-        await database.execute(
-            "INSERT INTO chat_history (user_email, message_type, content) VALUES (:email, 'bot', :content)",
-            {"email": user_email, "content": reply},
-        )
+        # --- Save messages into DB (only if database is available) ---
+        if database:
+            try:
+                await database.execute(
+                    "INSERT INTO chat_history (user_email, message_type, content) VALUES (:email, 'user', :content)",
+                    {"email": user_email, "content": user_message},
+                )
+                await database.execute(
+                    "INSERT INTO chat_history (user_email, message_type, content) VALUES (:email, 'bot', :content)",
+                    {"email": user_email, "content": reply},
+                )
+                logger.info(f"Chat history saved for user {user_email}")
+            except Exception as e:
+                logger.error(f"Error saving chat history: {e}")
+                # Don't fail the entire request if history saving fails
+        else:
+            logger.info("Database not configured - chat history not saved")
 
         return {"reply": reply, "status": "success"}
 
@@ -266,11 +331,18 @@ async def get_history(request: Request):
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    rows = await database.fetch_all(
-        "SELECT message_type, content, created_at FROM chat_history WHERE user_email = :email ORDER BY created_at ASC",
-        {"email": user.get("sub")},
-    )
-    return {"history": [dict(r) for r in rows]}
+    if not database:
+        return {"history": []}
+
+    try:
+        rows = await database.fetch_all(
+            "SELECT message_type, content, created_at FROM chat_history WHERE user_email = :email ORDER BY created_at ASC LIMIT 100",
+            {"email": user.get("sub")},
+        )
+        return {"history": [dict(r) for r in rows]}
+    except Exception as e:
+        logger.error(f"Error fetching chat history: {e}")
+        return {"history": []}
 
 # -------------------------
 # Run locally
