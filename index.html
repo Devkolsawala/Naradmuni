@@ -978,6 +978,24 @@
                     prompt: "How do I achieve better work-life balance?"
                 }
             ];
+             useEffect(() => {
+                if (user) {
+                fetch('/history', { credentials: 'include' })
+                    .then(res => res.json())
+                    .then(data => {
+                    if (data.history) {
+                        setMessages(
+                        data.history.map((msg, i) => ({
+                            id: i,
+                            type: msg.message_type,
+                            content: msg.content
+                        }))
+                        );
+                    }
+                    })
+                    .catch(err => console.error("Error fetching history:", err));
+                }
+            }, [user]);
 
             // Apply theme and check authentication on mount
             useEffect(() => {
